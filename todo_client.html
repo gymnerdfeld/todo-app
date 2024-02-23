@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos</title>
+    <style>
+        html {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>Todos</h1>
+    
+    <div id="app">
+        <ul>
+            <li v-for="todo, index of state.todos">
+                {{todo}}
+                <button v-on:click="todo_done(index)">✅</button>
+            </li>
+        </ul>
+        <input type="text" placeholder="Neues Todo" v-model="state.new_todo">
+        <button v-on:click="save(state.new_todo)">Speichern</button>
+        {{state.new_todo}}
+    </div>
+
+    <script type="module">
+        import {createApp, reactive} from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+
+        function setup() {
+            var state = reactive({
+                "todos": [],
+                "new_todo": "",
+            })
+
+            async function get_todos() {
+                var response = await fetch("/api/todos/")
+                var todos = await response.json()
+                state.todos = todos
+            }
+            get_todos()
+
+            async function todo_done(index) {
+                var response = await fetch(
+                    "/api/todos/" + index,
+                    {"method": "DELETE"}
+                )
+                get_todos()
+            }
+
+            return {
+                "state": state,
+                "todo_done": todo_done,
+            }
+        }
+
+        var app = createApp({"setup": setup})
+        app.mount("#app")
+    </script>
+</body>
+</html>
