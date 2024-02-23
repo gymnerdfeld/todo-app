@@ -20,8 +20,11 @@
                 <button v-on:click="todo_done(index)">✅</button>
             </li>
         </ul>
-        <input type="text" placeholder="Neues Todo" v-model="state.new_todo">
-        <button v-on:click="save(state.new_todo)">Speichern</button>
+        <input type="text" placeholder="Neues Todo" 
+            v-model="state.new_todo" 
+            v-on:keydown.enter="save" 
+            v-on:keydown.esc="state.new_todo = ''">
+        <button v-on:click="save()">Speichern</button>
         {{state.new_todo}}
     </div>
 
@@ -49,9 +52,19 @@
                 get_todos()
             }
 
+            async function save() {
+                await fetch("/api/todos/", {
+                    "method": "POST",
+                    "body": JSON.stringify({"text": state.new_todo})
+                })
+                state.new_todo = ""
+                get_todos()
+            }
+
             return {
                 "state": state,
                 "todo_done": todo_done,
+                "save": save,
             }
         }
 
