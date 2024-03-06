@@ -8,6 +8,9 @@
         html {
             font-family: sans-serif;
         }
+        span.strike {
+            text-decoration: line-through;
+        }
     </style>
 </head>
 <body>
@@ -16,20 +19,23 @@
     <div id="app">
         <ul>
             <li v-for="todo, index of state.todos">
-                {{todo}}
-                <button v-on:click="todo_done(index)">✅</button>
+                <span v-if="todo.done" class="strike">{{todo.text}}</span>
+                <span v-else>{{todo.text}}</span>
+                &nbsp;
+                <button v-if="todo.done" v-on:click="todo_delete(index)">❌</button>
+                <button v-else v-on:click="todo_done(index)">✅</button>
             </li>
         </ul>
         <input type="text" placeholder="Neues Todo" 
             v-model="state.new_todo" 
-            v-on:keydown.enter="save" 
+            v-on:keydown.enter="todo_save"
             v-on:keydown.esc="state.new_todo = ''">
-        <button v-on:click="save()">Speichern</button>
-        {{state.new_todo}}
+        <button v-on:click="todo_save">Speichern</button>
     </div>
 
     <script type="module">
         import {createApp, reactive} from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        import axios from 'https://cdn.skypack.dev/axios'
 
         function setup() {
             var state = reactive({
@@ -38,33 +44,32 @@
             })
 
             async function get_todos() {
-                var response = await fetch("/api/todos/")
-                var todos = await response.json()
-                state.todos = todos
+                var response = await axios.get("/api/todos/")
+                state.todos = response.data
             }
             get_todos()
 
-            async function todo_done(index) {
-                var response = await fetch(
-                    "/api/todos/" + index,
-                    {"method": "DELETE"}
-                )
+            async function todo_save() {
+                await axios.post("/api/todos/", {"text": state.new_todo})
+                state.new_todo = ""
                 get_todos()
             }
 
-            async function save() {
-                await fetch("/api/todos/", {
-                    "method": "POST",
-                    "body": JSON.stringify({"text": state.new_todo})
-                })
-                state.new_todo = ""
+            async function todo_done(index) {
+                var response = await axios.put("/api/todos/" + index, {done: true})
+                get_todos()
+            }
+
+            async function todo_delete(index) {
+                var response = await axios.delete("/api/todos/" + index)
                 get_todos()
             }
 
             return {
                 "state": state,
+                "todo_save": todo_save,
                 "todo_done": todo_done,
-                "save": save,
+                "todo_delete": todo_delete,
             }
         }
 
