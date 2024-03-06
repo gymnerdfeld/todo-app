@@ -208,18 +208,13 @@ class API:
 
 def _json_response(data, status=200):
     if data is None:
-        #response = 
-        return werkzeug.Response(status=status, 
-                                 headers={"Access-Control-Allow-Origin": "*"})
+        return werkzeug.Response(status=status)
     elif isinstance(data, werkzeug.Response):
         # already a response
-        data.headers.add("Access-Control-Allow-Origin", "*")
         return data
     else:
         data = json.dumps(data, indent=2) + "\n"
-        return werkzeug.Response(data, status=status, mimetype="application/json", 
-                                 headers={"Access-Control-Allow-Origin": "*",
-                                          "Access-Control-Allow-Methods": "*"})
+        return werkzeug.Response(data, status=status, mimetype="application/json")
 
 
 def _parse_json_body_wrapper(func, body_type, content_types):  # noqa: C901
