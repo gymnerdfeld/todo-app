@@ -301,7 +301,7 @@ def timestamp(string=None):
         return datetime.datetime.now().astimezone(datetime.timezone.utc)
 
 
-def run(app, prefix=None, port=3000, hostname="localhost"):
+def run(app, prefix=None, port=5000, hostname="127.0.0.1"):
     """Run a wsgi application like an API.
 
     Optionally specify a listening `port` (default: 3000) and a bind
@@ -309,7 +309,7 @@ def run(app, prefix=None, port=3000, hostname="localhost"):
     to listen on all interfaces.
     """
     if prefix is not None:
-        app = DispatcherMiddleware(NotFound, {prefix, app})
+        app = DispatcherMiddleware(NotFound, {prefix: app})
     werkzeug.run_simple(hostname, port, app, threaded=True, use_reloader=True)
 
 
